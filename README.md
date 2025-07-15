@@ -18,4 +18,4 @@ This is a custom Docker image of **[n8n](https://n8n.io/)** with full support fo
 ### 📥 Pull from Docker Hub
 
 ```bash
-docker pull romariormr/romariobrito-n8n-oracle:1.1002.3
+docker pull romariormr/romariobrito-n8n-oracle:latest
