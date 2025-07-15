@@ -1,0 +1,401 @@
+###############################################
+##############                                #
+############## ESSA IMAGEM É PERSONALIZADA    #
+############## SEMPRE QUE SAIR UMA NOVA VERSÃO#
+############## IREI DISPONIBILIZAR            #
+###############################################
+version: "3.7"
+services:
+
+## --------------------------- N8N-ORACLE --------------------------- ##
+
+  n8n_editor:
+    # image: n8nio/n8n:latest ## Versão do N8N
+    image: romariobrito-n8n-oracle:latest ## Versão do N8N
+    command: start
+
+    networks:
+      minha_rede:
+        aliases:
+          - n8n  # Substituindo para o novo FQDN
+
+    ports:
+      - "${N8N_PORT}:5678"
+    extra_hosts:
+      - "${N8N_HOST_ALIAS}:${N8N_HOST_IP}"
+
+    environment:
+      ## 🗄️ Banco de Dados (PostgreSQL)
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=${DB_NAME}
+      - DB_POSTGRESDB_HOST=${DB_HOST}
+      - DB_POSTGRESDB_PORT=${DB_PORT}
+      - DB_POSTGRESDB_USER=${DB_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_PASS}
+
+      ## 🔐 Criptografia
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+
+      # 🧠 Performance
+      - N8N_DIAGNOSTICS_ENABLED=${N8N_DIAGNOSTICS_ENABLED}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_PAYLOAD_SIZE_MAX=${N8N_PAYLOAD_SIZE_MAX}
+      - NODE_OPTIONS=--max-old-space-size=4096 # Aumenta limite de heap do Node.js
+      - N8N_EXECUTIONS_PROCESS=own             # Executar cada execução em processo separado
+      - CODE_ENABLE_STDOUT=true       # (Opcional) Habilita console.log em nós de Código
+
+      ## 🌐 URLs e Configurações de Acesso
+      - N8N_HOST=${N8N_HOST}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+
+      ## ⚙️ Ambiente de Execução
+      - NODE_ENV=production
+      - EXECUTIONS_MODE=queue
+      - EXECUTIONS_TIMEOUT=${EXECUTIONS_TIMEOUT}
+      - EXECUTIONS_TIMEOUT_MAX=${EXECUTIONS_TIMEOUT_MAX}
+      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=internal
+
+      ## 📦 Pacotes e Nós Comunitários
+      - N8N_REINSTALL_MISSING_PACKAGES=true
+      - N8N_COMMUNITY_PACKAGES_ENABLED=true
+      - N8N_NODE_PATH=/home/node/.n8n/nodes
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false # Enforce permissões de arquivos de configuração
+      - N8N_CUSTOM_EXTENSIONS=/usr/local/lib/node_modules/n8n-nodes-oracle # Caminho para extensões personalizadas
+      - NODE_FUNCTION_ALLOW_EXTERNAL=moment,lodash,moment-with-locales      # Bibliotecas JS externas permitidas
+
+      ## 📧 SMTP (Envio de E-mails)
+      - N8N_SMTP_SENDER=${SMTP_SENDER}
+      - N8N_SMTP_USER=${SMTP_USER}
+      - N8N_SMTP_PASS=${SMTP_PASS}
+      - N8N_SMTP_HOST=${SMTP_HOST}
+      - N8N_SMTP_PORT=${SMTP_PORT}
+      - N8N_SMTP_SSL=${SMTP_SSL}
+
+      ## 🔁 Redis (Fila de Execução)
+      - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
+      - QUEUE_BULL_REDIS_PORT=${REDIS_PORT}
+      - QUEUE_BULL_REDIS_DB=${REDIS_DB}
+
+      # ⚡ Cache Redis (Funções customizadas)
+      - N8N_FUNCTION_REDIS_CACHE=true          # Habilita cache Redis para funções customizadas
+      - N8N_FUNCTION_REDIS_CACHE_TTL=3600      # Tempo de cache Redis em segundos
+
+      ## 📊 Métricas
+      - N8N_METRICS=true
+      - N8N_METRICS_INCLUDE_QUEUE_METRICS=true
+      - N8N_METRICS_QUEUE_METRICS_INTERVAL=60
+      - QUEUE_HEALTH_CHECK_ACTIVE=true
+
+      ## ⏱️ Execuções e Limpeza
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336
+
+      ## 🧠 Recursos de IA
+      - N8N_AI_ENABLED=false
+      - N8N_AI_PROVIDER=openai
+      - N8N_AI_OPENAI_API_KEY=
+
+      ## 🧰 Permissões em Funções Personalizadas
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - NODE_FUNCTION_ALLOW_EXTERNAL=moment,lodash
+
+      ## 🕒 Fuso Horário
+      - GENERIC_TIMEZONE=${TZ}
+      - TZ=${TZ}
+
+      # 🔐 Segurança e Oracle
+      - N8N_SECURE_COOKIE=false              # Cookies seguros
+      - TNS_ADMIN=/opt/oracle/instantclient/network/admin # Diretório de configuração Oracle
+      - LD_LIBRARY_PATH=/opt/oracle/instantclient        # Caminho para libs Oracle
+
+      - N8N_EXPRESS_TRUST_PROXY=true
+      
+    configs:
+      - source: tnsnames_ora_config
+        target: /opt/oracle/instantclient/network/admin/tnsnames.ora
+      - source: sqlnet_ora_config
+        target: /opt/oracle/instantclient/network/admin/sqlnet.ora
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.n8n_editor.rule=Host(`${N8N_HOST}`) ## Url do Editor do N8N
+        - traefik.http.routers.n8n_editor.entrypoints=websecure
+        - traefik.http.routers.n8n_editor.priority=1
+        - traefik.http.routers.n8n_editor.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.n8n_editor.service=n8n_editor
+        - traefik.http.services.n8n_editor.loadbalancer.server.port=5678
+        - traefik.http.services.n8n_editor.loadbalancer.passHostHeader=1
+
+## --------------------------- N8N-ORACLE --------------------------- ##
+
+  n8n_webhook:
+    image: n8nio/n8n:latest ## Versão do N8N
+    command: webhook
+
+    networks:
+      minha_rede:
+        aliases:
+          - n8n  # Substituindo para o novo FQDN
+
+    environment:
+      ## 🗄️ Banco de Dados (PostgreSQL)
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=${DB_NAME}
+      - DB_POSTGRESDB_HOST=${DB_HOST}
+      - DB_POSTGRESDB_PORT=${DB_PORT}
+      - DB_POSTGRESDB_USER=${DB_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_PASS}
+
+      - N8N_DIAGNOSTICS_ENABLED=${N8N_DIAGNOSTICS_ENABLED}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_PAYLOAD_SIZE_MAX=${N8N_PAYLOAD_SIZE_MAX}
+
+      ## 🔐 Criptografia
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+
+      # 🧠 Performance
+      - N8N_DIAGNOSTICS_ENABLED=${N8N_DIAGNOSTICS_ENABLED}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_PAYLOAD_SIZE_MAX=${N8N_PAYLOAD_SIZE_MAX}
+      - NODE_OPTIONS=--max-old-space-size=4096 # Aumenta limite de heap do Node.js
+      - N8N_EXECUTIONS_PROCESS=own             # Executar cada execução em processo separado
+      - CODE_ENABLE_STDOUT=true       # (Opcional) Habilita console.log em nós de Código
+
+      ## 🌐 URLs e Configurações de Acesso
+      - N8N_HOST=${N8N_HOST}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+
+      ## ⚙️ Ambiente de Execução
+      - NODE_ENV=production
+      - EXECUTIONS_MODE=queue
+      - EXECUTIONS_TIMEOUT=${EXECUTIONS_TIMEOUT}
+      - EXECUTIONS_TIMEOUT_MAX=${EXECUTIONS_TIMEOUT_MAX}
+      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=internal
+
+      ## 📦 Pacotes e Nós Comunitários
+      - N8N_REINSTALL_MISSING_PACKAGES=true
+      - N8N_COMMUNITY_PACKAGES_ENABLED=true
+      - N8N_NODE_PATH=/home/node/.n8n/nodes
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false # Enforce permissões de arquivos de configuração
+      - N8N_CUSTOM_EXTENSIONS=/usr/local/lib/node_modules/n8n-nodes-oracle # Caminho para extensões personalizadas
+      - NODE_FUNCTION_ALLOW_EXTERNAL=moment,lodash,moment-with-locales      # Bibliotecas JS externas permitidas
+
+      ## 📧 SMTP (Envio de E-mails)
+      - N8N_SMTP_SENDER=${SMTP_SENDER}
+      - N8N_SMTP_USER=${SMTP_USER}
+      - N8N_SMTP_PASS=${SMTP_PASS}
+      - N8N_SMTP_HOST=${SMTP_HOST}
+      - N8N_SMTP_PORT=${SMTP_PORT}
+      - N8N_SMTP_SSL=${SMTP_SSL}
+
+      ## 🔁 Redis (Fila de Execução)
+      - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
+      - QUEUE_BULL_REDIS_PORT=${REDIS_PORT}
+      - QUEUE_BULL_REDIS_DB=${REDIS_DB}
+
+      # ⚡ Cache Redis (Funções customizadas)
+      - N8N_FUNCTION_REDIS_CACHE=true          # Habilita cache Redis para funções customizadas
+      - N8N_FUNCTION_REDIS_CACHE_TTL=3600      # Tempo de cache Redis em segundos
+
+      ## 📊 Métricas
+      - N8N_METRICS=true
+      - N8N_METRICS_INCLUDE_QUEUE_METRICS=true
+      - N8N_METRICS_QUEUE_METRICS_INTERVAL=60
+      - QUEUE_HEALTH_CHECK_ACTIVE=true
+
+      ## ⏱️ Execuções e Limpeza
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336
+
+      ## 🧠 Recursos de IA
+      - N8N_AI_ENABLED=false
+      - N8N_AI_PROVIDER=openai
+      - N8N_AI_OPENAI_API_KEY=
+
+      ## 🧰 Permissões em Funções Personalizadas
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - NODE_FUNCTION_ALLOW_EXTERNAL=moment,lodash
+
+      ## 🕒 Fuso Horário
+      - GENERIC_TIMEZONE=${TZ}
+      - TZ=${TZ}
+
+      # 🔐 Segurança e Oracle
+      - N8N_SECURE_COOKIE=false              # Cookies seguros
+      - TNS_ADMIN=/opt/oracle/instantclient/network/admin # Diretório de configuração Oracle
+      - LD_LIBRARY_PATH=/opt/oracle/instantclient        # Caminho para libs Oracle
+
+      - N8N_EXPRESS_TRUST_PROXY=true
+
+    configs:
+      - source: tnsnames_ora_config
+        target: /opt/oracle/instantclient/network/admin/tnsnames.ora
+      - source: sqlnet_ora_config
+        target: /opt/oracle/instantclient/network/admin/sqlnet.ora
+      
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.n8n_webhook.rule=(Host(`${WEBHOOK_URL}`)) ## Url do Webhook do N8N
+        - traefik.http.routers.n8n_webhook.entrypoints=websecure
+        - traefik.http.routers.n8n_webhook.priority=1
+        - traefik.http.routers.n8n_webhook.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.n8n_webhook.service=n8n_webhook
+        - traefik.http.services.n8n_webhook.loadbalancer.server.port=5678
+        - traefik.http.services.n8n_webhook.loadbalancer.passHostHeader=1
+
+## --------------------------- N8N-ORACLE --------------------------- ##
+
+  n8n_worker:
+    image: n8nio/n8n:latest ## Versão do N8N
+    command: worker --concurrency=10
+
+    networks:
+      minha_rede:
+        aliases:
+          - n8n  # Substituindo para o novo FQDN
+
+    environment:
+      ## 🗄️ Banco de Dados (PostgreSQL)
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=${DB_NAME}
+      - DB_POSTGRESDB_HOST=${DB_HOST}
+      - DB_POSTGRESDB_PORT=${DB_PORT}
+      - DB_POSTGRESDB_USER=${DB_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_PASS}
+
+      - N8N_DIAGNOSTICS_ENABLED=${N8N_DIAGNOSTICS_ENABLED}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_PAYLOAD_SIZE_MAX=${N8N_PAYLOAD_SIZE_MAX}
+
+      ## 🔐 Criptografia
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+
+      # 🧠 Performance
+      - N8N_DIAGNOSTICS_ENABLED=${N8N_DIAGNOSTICS_ENABLED}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_PAYLOAD_SIZE_MAX=${N8N_PAYLOAD_SIZE_MAX}
+      - NODE_OPTIONS=--max-old-space-size=4096 # Aumenta limite de heap do Node.js
+      - N8N_EXECUTIONS_PROCESS=own             # Executar cada execução em processo separado
+      - CODE_ENABLE_STDOUT=true       # (Opcional) Habilita console.log em nós de Código
+
+      ## 🌐 URLs e Configurações de Acesso
+      - N8N_HOST=${N8N_HOST}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+
+      ## ⚙️ Ambiente de Execução
+      - NODE_ENV=production
+      - EXECUTIONS_MODE=queue
+      - EXECUTIONS_TIMEOUT=${EXECUTIONS_TIMEOUT}
+      - EXECUTIONS_TIMEOUT_MAX=${EXECUTIONS_TIMEOUT_MAX}
+      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=internal
+
+      ## 📦 Pacotes e Nós Comunitários
+      - N8N_REINSTALL_MISSING_PACKAGES=true
+      - N8N_COMMUNITY_PACKAGES_ENABLED=true
+      - N8N_NODE_PATH=/home/node/.n8n/nodes
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false # Enforce permissões de arquivos de configuração
+      - N8N_CUSTOM_EXTENSIONS=/usr/local/lib/node_modules/n8n-nodes-oracle # Caminho para extensões personalizadas
+      - NODE_FUNCTION_ALLOW_EXTERNAL=moment,lodash,moment-with-locales      # Bibliotecas JS externas permitidas
+
+      ## 📧 SMTP (Envio de E-mails)
+      - N8N_SMTP_SENDER=${SMTP_SENDER}
+      - N8N_SMTP_USER=${SMTP_USER}
+      - N8N_SMTP_PASS=${SMTP_PASS}
+      - N8N_SMTP_HOST=${SMTP_HOST}
+      - N8N_SMTP_PORT=${SMTP_PORT}
+      - N8N_SMTP_SSL=${SMTP_SSL}
+
+      ## 🔁 Redis (Fila de Execução)
+      - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
+      - QUEUE_BULL_REDIS_PORT=${REDIS_PORT}
+      - QUEUE_BULL_REDIS_DB=${REDIS_DB}
+
+      # ⚡ Cache Redis (Funções customizadas)
+      - N8N_FUNCTION_REDIS_CACHE=true          # Habilita cache Redis para funções customizadas
+      - N8N_FUNCTION_REDIS_CACHE_TTL=3600      # Tempo de cache Redis em segundos
+
+      ## 📊 Métricas
+      - N8N_METRICS=true
+      - N8N_METRICS_INCLUDE_QUEUE_METRICS=true
+      - N8N_METRICS_QUEUE_METRICS_INTERVAL=60
+      - QUEUE_HEALTH_CHECK_ACTIVE=true
+
+      ## ⏱️ Execuções e Limpeza
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336
+
+      ## 🧠 Recursos de IA
+      - N8N_AI_ENABLED=false
+      - N8N_AI_PROVIDER=openai
+      - N8N_AI_OPENAI_API_KEY=
+
+      ## 🧰 Permissões em Funções Personalizadas
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - NODE_FUNCTION_ALLOW_EXTERNAL=moment,lodash
+
+      ## 🕒 Fuso Horário
+      - GENERIC_TIMEZONE=${TZ}
+      - TZ=${TZ}
+
+      # 🔐 Segurança e Oracle
+      - N8N_SECURE_COOKIE=false              # Cookies seguros
+      - TNS_ADMIN=/opt/oracle/instantclient/network/admin # Diretório de configuração Oracle
+      - LD_LIBRARY_PATH=/opt/oracle/instantclient        # Caminho para libs Oracle
+
+      - N8N_EXPRESS_TRUST_PROXY=true
+
+    configs:
+      - source: tnsnames_ora_config
+        target: /opt/oracle/instantclient/network/admin/tnsnames.ora
+      - source: sqlnet_ora_config
+        target: /opt/oracle/instantclient/network/admin/sqlnet.ora
+      
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
+
+## --------------------------- N8N-ORACLE --------------------------- ##
+
+networks:
+  minha_rede: ## Nome da rede interna
+    external: true
+    name: minha_rede ## Nome da rede interna
