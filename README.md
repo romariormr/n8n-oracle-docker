@@ -1,3 +1,4 @@
+````markdown
 # 🚀 n8n with Oracle Instant Client Support
 [🇺🇸 English below | 🇧🇷 Português abaixo]
 
@@ -5,9 +6,9 @@
 
 This is a custom Docker image of **[n8n](https://n8n.io/)** with full support for the **Oracle Instant Client 21.12**, enabling Oracle Database integrations in workflows.
 
-- ✅ Based on official `n8n` image
-- ✅ Includes Oracle Instant Client basic + SDK (21.12)
-- ✅ Pre-installed `oracledb` Node.js driver
+- ✅ Based on official `n8n` image  
+- ✅ Includes Oracle Instant Client basic + SDK (21.12)  
+- ✅ Pre-installed `oracledb` Node.js driver  
 - ✅ Open-source and ready for production use
 
 ---
@@ -18,8 +19,11 @@ This is a custom Docker image of **[n8n](https://n8n.io/)** with full support fo
 
 ```bash
 docker pull romariormr/romariobrito-n8n-oracle:latest
+````
 
-# N8N com Suporte Oracle - Docker Image
+---
+
+# 🇧🇷 N8N com Suporte Oracle - Docker Image
 
 Este repositório contém uma imagem Docker personalizada do N8N com suporte para o Oracle Database. Siga as etapas abaixo para configurar e utilizar corretamente o ambiente.
 
@@ -36,58 +40,84 @@ Este repositório contém uma imagem Docker personalizada do N8N com suporte par
 
 ---
 
-## Configurando Oracle no N8N
+## 🔧 Configurando Oracle no N8N
 
 Para utilizar o Oracle no N8N, você precisa realizar algumas configurações no seu ambiente Docker. Siga os passos abaixo:
 
-1. **Verifique se o arquivo `yaml` possui a configuração correta dos arquivos `sqlnet.ora` e `tnsnames.ora`**.
-```bash
-      <img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
-```bash
-2. **Acesse a área de `Configs` no seu Docker Swarm** para configurar os arquivos necessários.
+### 1. Verifique se o `docker-compose.yml` possui as configurações corretas:
 
-   <img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
-   <img width="447" height="465" alt="image" src="https://github.com/user-attachments/assets/9a31d803-4a2a-443d-815f-1d0ac920e6e0" />
+<img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
 
-3. **Crie os arquivos `sqlnet_ora_config` e `tnsnames_ora_config` com os seguintes conteúdos**:
+### 2. Crie os arquivos de configuração `sqlnet.ora` e `tnsnames.ora` no Portainer (ou CLI):
 
-   - **sqlnet_ora_config**
-     ```txt
-     SQLNET.ALLOWED_LOGON_VERSION_SERVER=8
-     SQLNET.ALLOWED_LOGON_VERSION_CLIENT=8
-     ```
+<img width="447" height="465" alt="image" src="https://github.com/user-attachments/assets/9a31d803-4a2a-443d-815f-1d0ac920e6e0" />
 
-   - **tnsnames_ora_config**
-     ```txt
-     {NAMEBD} =
-       (DESCRIPTION =
-         (ADDRESS = (PROTOCOL = TCP)(HOST = {IPSERVER01})(PORT = {PORT}))
-         (ADDRESS = (PROTOCOL = TCP)(HOST = {IPSERVER02})(PORT = {PORT}))
-         (LOAD_BALANCE = yes)
-         (CONNECT_DATA =
-           (SERVER = DEDICATED)
-           (SERVICE_NAME = {NAMEBD})
-         )
-       )
-     ```
+#### Conteúdo do `sqlnet_ora_config`:
 
-   <img width="455" height="513" alt="image" src="https://github.com/user-attachments/assets/3d143573-d883-4a31-b9f1-38772e5002f0" />
+```txt
+SQLNET.ALLOWED_LOGON_VERSION_SERVER=8
+SQLNET.ALLOWED_LOGON_VERSION_CLIENT=8
+```
 
+#### Conteúdo do `tnsnames_ora_config`:
+
+```txt
+{NAMEBD} =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = {IPSERVER01})(PORT = {PORT}))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = {IPSERVER02})(PORT = {PORT}))
+    (LOAD_BALANCE = yes)
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = {NAMEBD})
+    )
+  )
+```
+
+<img width="455" height="513" alt="image" src="https://github.com/user-attachments/assets/3d143573-d883-4a31-b9f1-38772e5002f0" />
 
 ---
 
-## Adicionando Credenciais no N8N
+## 🔐 Adicionando Credenciais no N8N
 
-Para configurar corretamente as credenciais de acesso ao Oracle no N8N, acesse a interface de configuração de credenciais e adicione as informações do banco de dados:
+Na interface gráfica do N8N, vá em *Credenciais → Oracle Database* e configure como no exemplo abaixo:
 
 <img width="715" height="559" alt="image" src="https://github.com/user-attachments/assets/3e839f0c-e317-4b27-93ca-399054cfe12f" />
 
-
 ---
 
-## Deploy da Stack no Docker
+## 🚀 Deploy da Stack no Docker
 
 Após configurar os arquivos necessários, faça o deploy da stack utilizando o Docker Compose:
 
 ```bash
 docker-compose -f docker-compose.yml up -d
+```
+
+---
+
+## 🧠 Configuração do Banco de Dados
+
+Certifique-se de que a conexão ao Oracle está funcionando corretamente. Caso necessário, verifique permissões de rede, listener do Oracle e logs da aplicação N8N.
+
+---
+
+## ❤️ Doações
+
+Se este projeto lhe ajudou, considere apoiar com uma doação. Isso me motiva a continuar melhorando!
+
+### 💳 [Doar com Mercado Pago](http://link.mercadopago.com.br/romariobrito)
+
+### 💰 PagSeguro
+
+[![pagseguro](https://stc.pagseguro.uol.com.br/public/img/botoes/doacoes/120x53-doar.gif)](https://pag.ae/bljJm47)
+
+### 💳 PayPal
+
+[![paypal](https://www.paypalobjects.com/pt_BR/BR/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7VVS675TLJHUL&lc=BR&item_name=Eracydes%20Lima%20Carvalho%20Junior&currency_code=BRL&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
+
+---
+
+📧 Para dúvidas ou sugestões, entre em contato ou abra uma issue.
+
+```
