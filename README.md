@@ -43,11 +43,12 @@ Para utilizar o Oracle no N8N, você precisa realizar algumas configurações no
 
 1. **Verifique se o arquivo `yaml` possui a configuração correta dos arquivos `sqlnet.ora` e `tnsnames.ora`**.
 
-   ![Imagem 1](file:///mnt/data/1a59e3f7-9c17-4b6f-b2cd-113fec98311f.png)
+      <img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
 
 2. **Acesse a área de `Configs` no seu Docker Swarm** para configurar os arquivos necessários.
 
-   ![Imagem 2](file:///mnt/data/163244a5-fb8b-4142-88e1-25464fbdfc6f.png)
+   <img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
+   <img width="447" height="465" alt="image" src="https://github.com/user-attachments/assets/9a31d803-4a2a-443d-815f-1d0ac920e6e0" />
 
 3. **Crie os arquivos `sqlnet_ora_config` e `tnsnames_ora_config` com os seguintes conteúdos**:
 
@@ -71,7 +72,8 @@ Para utilizar o Oracle no N8N, você precisa realizar algumas configurações no
        )
      ```
 
-   ![Imagem 3](file:///mnt/data/9ad56503-8591-4bce-81b4-d0978b2908d3.png)
+   <img width="455" height="513" alt="image" src="https://github.com/user-attachments/assets/3d143573-d883-4a31-b9f1-38772e5002f0" />
+
 
 ---
 
@@ -79,7 +81,8 @@ Para utilizar o Oracle no N8N, você precisa realizar algumas configurações no
 
 Para configurar corretamente as credenciais de acesso ao Oracle no N8N, acesse a interface de configuração de credenciais e adicione as informações do banco de dados:
 
-![Imagem 4](file:///mnt/data/ab910f15-cf65-4b7a-9243-fbacb0cc1759.png)
+<img width="715" height="559" alt="image" src="https://github.com/user-attachments/assets/3e839f0c-e317-4b27-93ca-399054cfe12f" />
+
 
 ---
 
