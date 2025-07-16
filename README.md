@@ -108,14 +108,6 @@ Se este projeto lhe ajudou, considere apoiar com uma doação. Isso me motiva a 
 
 ### 💳 [Doar com Mercado Pago](http://link.mercadopago.com.br/romariobrito)
 
-### 💰 PagSeguro
-
-[![pagseguro](https://stc.pagseguro.uol.com.br/public/img/botoes/doacoes/120x53-doar.gif)](https://pag.ae/bljJm47)
-
-### 💳 PayPal
-
-[![paypal](https://www.paypalobjects.com/pt_BR/BR/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7VVS675TLJHUL&lc=BR&item_name=Eracydes%20Lima%20Carvalho%20Junior&currency_code=BRL&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
-
 ---
 
 📧 Para dúvidas ou sugestões, entre em contato ou abra uma issue.
