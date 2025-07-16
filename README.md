@@ -92,4 +92,3 @@ Após configurar os arquivos necessários, faça o deploy da stack utilizando o 
 
 ```bash
 docker-compose -f docker-compose.yml up -d
-<img width="455" height="513" alt="image" src="https://github.com/user-attachments/assets/3d143573-d883-4a31-b9f1-38772e5002f0" />
