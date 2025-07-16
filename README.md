@@ -1,5 +1,4 @@
 # 🚀 n8n with Oracle Instant Client Support
-<img width="455" height="513" alt="image" src="https://github.com/user-attachments/assets/3d143573-d883-4a31-b9f1-38772e5002f0" />
 [🇺🇸 English below | 🇧🇷 Português abaixo]
 
 ## 📦 Image Overview
@@ -42,9 +41,9 @@ Este repositório contém uma imagem Docker personalizada do N8N com suporte par
 Para utilizar o Oracle no N8N, você precisa realizar algumas configurações no seu ambiente Docker. Siga os passos abaixo:
 
 1. **Verifique se o arquivo `yaml` possui a configuração correta dos arquivos `sqlnet.ora` e `tnsnames.ora`**.
-
+```bash
       <img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
-
+```bash
 2. **Acesse a área de `Configs` no seu Docker Swarm** para configurar os arquivos necessários.
 
    <img width="557" height="191" alt="image" src="https://github.com/user-attachments/assets/36bb1155-eb74-4802-9170-627c94ac3776" />
