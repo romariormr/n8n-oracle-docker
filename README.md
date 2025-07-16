@@ -1,5 +1,5 @@
 # 🚀 n8n with Oracle Instant Client Support
-
+<img width="455" height="513" alt="image" src="https://github.com/user-attachments/assets/3d143573-d883-4a31-b9f1-38772e5002f0" />
 [🇺🇸 English below | 🇧🇷 Português abaixo]
 
 ## 📦 Image Overview
