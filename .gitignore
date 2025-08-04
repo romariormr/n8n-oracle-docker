@@ -1,1 +1,4 @@
 instantclient-*.zip
+*.tar
+*.tar.gz
+*.zip
