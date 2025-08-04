@@ -1,4 +1,11 @@
+
+# Arquivos de imagem Docker
+# Arquivos temporários
 instantclient-*.zip
+*.log
+# Logs
 *.tar
 *.tar.gz
+*.temp
+*.tmp
 *.zip
