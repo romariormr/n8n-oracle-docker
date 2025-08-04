@@ -167,11 +167,26 @@ if [ "$TAR_SIZE" -ge "$MAX_SIZE" ]; then
     exit 1
 fi
 
-# COMMITA MUDANÇAS NO GIT (se houver)
+# COMMITA MUDANÇAS NO GIT (se houver) - EXCLUINDO ARQUIVOS .tar
 log_info "Verificando alterações para commit..."
-git add .
+
+# Garante que arquivos .tar não sejam commitados
+echo "*.tar" >> .gitignore
+echo "*.tar.gz" >> .gitignore
+echo "*.zip" >> .gitignore
+sort .gitignore | uniq > .gitignore.tmp && mv .gitignore.tmp .gitignore
+
+# Remove o arquivo TAR do staging se estiver lá
+git reset HEAD "${TAR_NAME}" 2>/dev/null || true
+git reset HEAD "*.tar" 2>/dev/null || true
+
+# Adiciona apenas arquivos necessários (exclui .tar)
+git add .gitignore
+git add -A
+git reset HEAD "*.tar" 2>/dev/null || true
+
 if ! git diff --cached --quiet; then
-    log_info "Commitando alterações..."
+    log_info "Commitando alterações (excluindo arquivos .tar)..."
     git commit -m "feat: release v${TAG} - ${DOCKER_IMAGE}"
     
     if ! git push origin "$MAIN_BRANCH"; then
